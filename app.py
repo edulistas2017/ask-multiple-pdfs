@@ -11,6 +11,7 @@ from htmlTemplates import css, bot_template, user_template
 from langchain.llms import HuggingFaceHub
 from langchain.llms import OpenAI
 from langchain.callbacks import get_openai_callback
+import os
 
 def get_pdf_text(pdf_docs):
     text = ""
@@ -68,6 +69,8 @@ def handle_userinput(user_question):
 
 def main():
     load_dotenv()
+    if not os.environ["OPENAI_API_KEY"]:
+        os.environ["OPENAI_API_KEY"]=st.secrets["OPENAI_API_KEY"]
     # total_custo = 0.0
     st.set_page_config(page_title="Pergunte para mais de um PDF",
                        page_icon=":books:")
