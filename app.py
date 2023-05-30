@@ -9,6 +9,8 @@ from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from htmlTemplates import css, bot_template, user_template
 from langchain.llms import HuggingFaceHub
+from langchain.llms import OpenAI
+from langchain.callbacks import get_openai_callback
 
 def get_pdf_text(pdf_docs):
     text = ""
@@ -66,7 +68,8 @@ def handle_userinput(user_question):
 
 def main():
     load_dotenv()
-    st.set_page_config(page_title="Chat with multiple PDFs",
+    # total_custo = 0.0
+    st.set_page_config(page_title="Pergunte para mais de um PDF",
                        page_icon=":books:")
     st.write(css, unsafe_allow_html=True)
 
@@ -75,17 +78,21 @@ def main():
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = None
 
-    st.header("Chat with multiple PDFs :books:")
-    user_question = st.text_input("Ask a question about your documents:")
+    st.header("Pergunte para mais de um PDF :books:")
+    user_question = st.text_input("Questão sobre seus documentos:")
     if user_question:
-        handle_userinput(user_question)
+        with get_openai_callback() as cb:
+            handle_userinput(user_question)
+            st.sidebar.write(cb)
+            # total_custo = total_custo + cb.total_cost
+            # st.sidebar.write("Custo na sessão: ", total_custo)
 
     with st.sidebar:
-        st.subheader("Your documents")
+        st.subheader("Seus documentos em PDF")
         pdf_docs = st.file_uploader(
-            "Upload your PDFs here and click on 'Process'", accept_multiple_files=True)
-        if st.button("Process"):
-            with st.spinner("Processing"):
+            "Suba seus PDFs aqui e clique no botão 'Processe' ", accept_multiple_files=True)
+        if st.button("Processe"):
+            with st.spinner("Processando..."):
                 # get pdf text
                 raw_text = get_pdf_text(pdf_docs)
 
@@ -97,7 +104,7 @@ def main():
 
                 # create conversation chain
                 st.session_state.conversation = get_conversation_chain(
-                    vectorstore)
+                        vectorstore)
 
 
 if __name__ == '__main__':
